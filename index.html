@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juego del Impostor</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: #0b0b0b;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .screen {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  input, button {
+    width: 100%;
+    padding: 14px;
+    font-size: 18px;
+    border-radius: 12px;
+    border: none;
+    margin-bottom: 14px;
+  }
+
+  button {
+    background: #7c3aed;
+    color: white;
+    font-weight: bold;
+  }
+
+  button:disabled {
+    opacity: 0.4;
+  }
+
+  #card {
+    height: 260px;
+    border-radius: 24px;
+    background: #1c1c1c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    padding: 20px;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.3s ease;
+    margin-bottom: 20px;
+  }
+
+  #card:active {
+    transform: scale(0.97);
+  }
+
+  #card.revealed {
+    background: #262626;
+  }
+</style>
+</head>
+
+<body>
+
+<div id="setup" class="screen">
+  <h1>🎭 Juego del Impostor</h1>
+  <input id="names" placeholder="Nombres (Player, Player, Player)">
+  <input id="word" placeholder="Palabra secreta">
+  <button onclick="startGame()">Iniciar juego</button>
+</div>
+
+<div id="game" class="screen" style="display:none;">
+  <h2 id="playerTitle"></h2>
+
+  <div id="card" onclick="reveal()">
+    Toca la carta para revelar tu rol
+  </div>
+
+  <button id="nextBtn" onclick="nextPlayer()" disabled>
+    Siguiente jugador
+  </button>
+</div>
+
+<div id="end" class="screen" style="display:none;">
+  <h2>🎉 Fin del juego</h2>
+  <p id="result" style="font-size:20px;"></p>
+  <button onclick="restart()">Volver a jugar</button>
+</div>
+
+<script>
+let players = [];
+let secretWord = "";
+let impostorIndex = 0;
+let currentIndex = 0;
+let revealed = false;
+
+// 🔹 Cargar valores guardados
+names.value = localStorage.getItem("players") || "";
+word.value = localStorage.getItem("word") || "";
+
+// 🔹 Guardar mientras escribes
+names.addEventListener("input", () => {
+  localStorage.setItem("players", names.value);
+});
+
+word.addEventListener("input", () => {
+  localStorage.setItem("word", word.value);
+});
+
+function startGame() {
+  players = names.value.split(",").map(n => n.trim()).filter(n => n);
+  secretWord = word.value;
+
+  if (players.length < 3 || !secretWord) {
+    alert("Ingresa al menos 3 jugadores y una palabra");
+    return;
+  }
+
+  impostorIndex = Math.floor(Math.random() * players.length);
+
+  setup.style.display = "none";
+  game.style.display = "block";
+  updatePlayer();
+}
+
+function updatePlayer() {
+  revealed = false;
+  card.classList.remove("revealed");
+  card.textContent = "Toca la carta para revelar tu rol";
+  playerTitle.textContent = `Turno de: ${players[currentIndex]}`;
+  nextBtn.disabled = true;
+}
+
+function reveal() {
+  if (revealed) return;
+
+  revealed = true;
+  card.classList.add("revealed");
+
+  if (currentIndex === impostorIndex) {
+    card.textContent = "😈 Eres el impostor";
+  } else {
+    card.textContent = `🔑 ${secretWord}`;
+  }
+
+  nextBtn.disabled = false;
+}
+
+function nextPlayer() {
+  currentIndex++;
+
+  if (currentIndex < players.length) {
+    updatePlayer();
+  } else {
+    game.style.display = "none";
+    end.style.display = "block";
+    result.textContent =
+      `😈 El impostor fue: ${players[impostorIndex]} — 🔑 Palabra: ${secretWord}`;
+  }
+}
+
+function restart() {
+  currentIndex = 0;
+  setup.style.display = "block";
+  end.style.display = "none";
+}
+</script>
+
+</body>
+</html>

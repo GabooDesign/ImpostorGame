@@ -1,177 +1,225 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Juego del Impostor</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Juego del impostor</title>
+  <link rel="icon" href="favicon.png" type="image/svg+xml">
+  <link rel="manifest" href="manifest.json">
 
 <style>
-  body {
-    margin: 0;
-    font-family: system-ui, sans-serif;
-    background: #0b0b0b;
-    color: white;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+/* --- UX - Mobile Devices --- */
+/* Bloquear selección de texto */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
 
-  .screen {
-    width: 100%;
-    max-width: 420px;
-    padding: 20px;
-    text-align: center;
-  }
+/* Permitir escribir y seleccionar dentro de inputs y textareas */
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
 
-  input, button {
-    width: 100%;
-    padding: 14px;
-    font-size: 18px;
-    border-radius: 12px;
-    border: none;
-    margin-bottom: 14px;
-  }
+/* Links y botones siguen siendo clickeables */
+a,
+button {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+}
 
-  button {
-    background: #7c3aed;
-    color: white;
-    font-weight: bold;
-  }
 
-  button:disabled {
-    opacity: 0.4;
-  }
+/* --- Layout base --- */
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: linear-gradient(45deg, #090018 0%, #1c003e 100%);
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
 
-  #card {
-    height: 260px;
-    border-radius: 24px;
-    background: #1c1c1c;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-    padding: 20px;
-    cursor: pointer;
-    transition: transform 0.2s ease, background 0.3s ease;
-    margin-bottom: 20px;
-  }
+.screen {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+  text-align: center;
+}
 
-  #card:active {
-    transform: scale(0.97);
-  }
+input, button {
+  width: 100%;
+  padding: 14px;
+  font-size: 18px;
+  border-radius: 12px;
+  border: none;
+  margin-bottom: 14px;
+  box-sizing: border-box;
+}
 
-  #card.revealed {
-    background: #262626;
+input {
+  background: #1c1c1c;
+  color: white;
+}
+
+input::placeholder {
+  color: rgba(255,255,255,0.6);
+}
+
+button {
+  background: #7c3aed;
+  color: white;
+  font-weight: bold;
+}
+
+button:disabled {
+  opacity: 0.4;
+}
+
+/* --- Card --- */
+#card {
+  position: relative;
+  overflow: hidden;
+  height: 260px;
+  border-radius: 24px;
+  background: #1c1c1c;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 26px;
+  padding: 20px;
+  margin-bottom: 20px;
+
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+#card:active {
+  transform: scale(0.97);
+}
+
+#card.revealed {
+  background: #262626;
+}
+
+/* --- Card content --- */
+.card-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+/* --- SVG border (solo final) --- */
+.border-svg {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  pointer-events: none;
+  border-radius: 24px;
+}
+
+
+.border-svg rect {
+  fill: none;
+  stroke: #7c3aed;
+  stroke-width: 5;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+}
+
+/* Animación SOLO durante hold final */
+#card.holding .border-svg rect {
+  animation: drawBorder 3s linear forwards;
+}
+
+@keyframes drawBorder {
+  to {
+    stroke-dashoffset: 0;
   }
+}
+
+.hint {
+  font-size: 14px;
+  opacity: 0.6;
+  margin-top: 10px;
+}
+
+/* ================= FOOTER ================= */
+.app-footer {
+  position: fixed;
+  bottom: 12px;
+  left: 0;
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 12px;
+  opacity: 0.6;
+  pointer-events: auto;
+}
+
 </style>
 </head>
 
 <body>
-
+<!-- SETUP -->
 <div id="setup" class="screen">
   <h1>🎭 Juego del Impostor</h1>
-  <input id="names" placeholder="Nombres (Player, Player, Player)">
+  <h3>¿Lograrás saber quien es el impostor del grupo?</h3>
+  <input id="names" placeholder="Inserta nombres separados por comas">
   <input id="word" placeholder="Palabra secreta">
+  <input id="Pista" placeholder="Pista (Opcional)">
   <button onclick="startGame()">Iniciar juego</button>
 </div>
 
+<!-- GAME -->
 <div id="game" class="screen" style="display:none;">
   <h2 id="playerTitle"></h2>
 
-  <div id="card" onclick="reveal()">
-    Toca la carta para revelar tu rol
+<div id="card">
+  <svg class="border-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <rect x="2" y="2" width="96" height="96" rx="6" ry="6"/>
+  </svg>
+  <div class="card-content">
+    Toca para revelar tu rol
   </div>
+</div>
 
   <button id="nextBtn" onclick="nextPlayer()" disabled>
     Siguiente jugador
   </button>
 </div>
 
+<!-- END -->
 <div id="end" class="screen" style="display:none;">
   <h2>🎉 Fin del juego</h2>
   <p id="result" style="font-size:20px;"></p>
   <button onclick="restart()">Volver a jugar</button>
 </div>
 
-<script>
-let players = [];
-let secretWord = "";
-let impostorIndex = 0;
-let currentIndex = 0;
-let revealed = false;
+<script src="script/game.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
-// 🔹 Cargar valores guardados
-names.value = localStorage.getItem("players") || "";
-word.value = localStorage.getItem("word") || "";
-
-// 🔹 Guardar mientras escribes
-names.addEventListener("input", () => {
-  localStorage.setItem("players", names.value);
-});
-
-word.addEventListener("input", () => {
-  localStorage.setItem("word", word.value);
-});
-
-function startGame() {
-  players = names.value.split(",").map(n => n.trim()).filter(n => n);
-  secretWord = word.value;
-
-  if (players.length < 3 || !secretWord) {
-    alert("Ingresa al menos 3 jugadores y una palabra");
-    return;
-  }
-
-  impostorIndex = Math.floor(Math.random() * players.length);
-
-  setup.style.display = "none";
-  game.style.display = "block";
-  updatePlayer();
-}
-
-function updatePlayer() {
-  revealed = false;
-  card.classList.remove("revealed");
-  card.textContent = "Toca la carta para revelar tu rol";
-  playerTitle.textContent = `Turno de: ${players[currentIndex]}`;
-  nextBtn.disabled = true;
-}
-
-function reveal() {
-  if (revealed) return;
-
-  revealed = true;
-  card.classList.add("revealed");
-
-  if (currentIndex === impostorIndex) {
-    card.textContent = "😈 Eres el impostor";
-  } else {
-    card.textContent = `🔑 ${secretWord}`;
-  }
-
-  nextBtn.disabled = false;
-}
-
-function nextPlayer() {
-  currentIndex++;
-
-  if (currentIndex < players.length) {
-    updatePlayer();
-  } else {
-    game.style.display = "none";
-    end.style.display = "block";
-    result.textContent =
-      `😈 El impostor fue: ${players[impostorIndex]} — 🔑 Palabra: ${secretWord}`;
-  }
-}
-
-function restart() {
-  currentIndex = 0;
-  setup.style.display = "block";
-  end.style.display = "none";
-}
-</script>
-
+<footer class="app-footer">
+  <span>Hecho con 💜 para jugar en grupo - </span>
+  <span>
+    por <strong><i>
+      <a href="https://github.com/GabooDesign" target="_blank" rel="noopener noreferrer">
+        GabooDesign
+      </a>
+    </i></strong>
+  </span>
+</footer>
 </body>
+
 </html>

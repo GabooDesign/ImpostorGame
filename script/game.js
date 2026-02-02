@@ -91,7 +91,7 @@ function prepareFinalHold() {
   const content = card.querySelector(".card-content");
   content.innerHTML = `
     Mantén presionado <br>
-    para revelar el final
+    para revelar al impostor
     <div class="hint">(no sueltes)</div>
   `;
 

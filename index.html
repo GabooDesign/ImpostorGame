@@ -76,6 +76,12 @@ button {
   font-weight: bold;
 }
 
+button.random {
+  background: #391b6e;
+  color: white;
+  font-weight: bold;
+}
+
 button:disabled {
   opacity: 0.4;
 }
@@ -170,8 +176,8 @@ button:disabled {
 }
 
 .app-footer a {
-  color: #8c00ff; /* Blue color for default links */
-  text-decoration: none; /* Removes the default underline */
+  color: #8c00ff;
+  text-decoration: none; 
 }
 
 </style>
@@ -185,7 +191,8 @@ button:disabled {
   <input id="names" placeholder="Inserta nombres separados por comas">
   <input id="word" placeholder="Palabra secreta">
   <input id="Pista" placeholder="Pista (Opcional)">
-  <button onclick="startGame()">Iniciar juego</button>
+  <button class="start" onclick="startGame()">Iniciar juego</button>
+  <button class="random" onclick="startGameRandom()">Iniciar juego (Con frase aleatoria)</button>
 </div>
 
 <!-- GAME -->

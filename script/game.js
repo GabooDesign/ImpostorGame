@@ -41,6 +41,60 @@ function startGame() {
   updatePlayer();
 }
 
+async function startGameRandom() {
+
+  const namesInput = names.value.trim();
+
+  if (!namesInput) {
+    alert("Debes ingresar los nombres primero.");
+    return;
+  }
+
+  const parsedPlayers = namesInput
+    .split(",")
+    .map(name => name.trim())
+    .filter(Boolean);
+
+  if (parsedPlayers.length < 3) {
+    alert("Necesitas al menos 3 jugadores.");
+    return;
+  }
+
+  // Cargar palabras del CSV
+  const wordsList = await loadCSV();
+
+  async function loadCSV() {
+  const response = await fetch("script/words.csv");
+  const text = await response.text();
+  return parseCSV(text);
+}
+
+function parseCSV(csv) {
+  const lines = csv.trim().split("\n").slice(1);
+
+  return lines.map(line => {
+    const [secretWord, hint] = line.split(",");
+    return { secretWord, hint };
+  });
+}
+
+  if (!wordsList.length) {
+    alert("No se pudieron cargar las palabras.");
+    return;
+  }
+
+  // Elegir palabra random
+  const randomIndex = Math.floor(Math.random() * wordsList.length);
+  const randomWord = wordsList[randomIndex];
+
+  // Insertar en inputs existentes
+  word.value = randomWord.secretWord;
+  Pista.value = randomWord.hint;
+
+  // Iniciar juego normal
+  startGame();
+}
+
 function updatePlayer() {
   revealed = false;
   finalHold = false;

@@ -1,7 +1,7 @@
 # ImpostorGame
 
 ![ImpostorGame](ImpostorGame.png)
-
+_**(Ahora puedes instalar el juego como aplicación de teléfono dandole a guardar en pestaña de inicio)**_
 ## 🕵️‍♂️ Acerca del proyecto
 
 **ImpostorGame** es un juego web creado para acompañar una actividad local y grupal conocida como *Juego del Impostor*.  
@@ -50,6 +50,7 @@ Gracias por compartir este genial recurso 💜
 ## 🚧 Estado del proyecto
 
 El proyecto se encuentra en estado final, aunque puede recibir actualizaciones con mejoras o características adicionales.
+
 
 ---
 
